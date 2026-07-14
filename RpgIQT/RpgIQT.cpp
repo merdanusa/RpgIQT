@@ -140,19 +140,19 @@ int main() {
             cout << "Type 0 to create a new character, or -1 to quit: ";
         }
 
-        int index;
-        cin >> index;
+        int input;
+        cin >> input;
 
-        if (index == -1) {
+        if (input == -1) {
             gameOn = false;
         }
-        else if (index == 0) {
+        else if (input == 0) {
             createCharacter(roster);
         }
         else {
             bool found = false;
             for (Character& character : roster) {
-                if (character.index == index) {
+                if (character.index == input) {
                     found = true;
                     cout << "Viewing " << character.name << "..." << endl;
                 }
