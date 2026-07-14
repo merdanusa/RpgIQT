@@ -123,6 +123,22 @@ void createCharacter(vector<Character>& roster) {
     cout << "Character created!" << endl;
 }
 
+void displayCharacter(const Character& character) {
+	cout << "Name: " << character.name << endl;
+	cout << "HP: " << character.hp << endl;
+	cout << "Level: " << character.level << endl;
+	cout << "Gold: " << character.gold << endl;
+	cout << "Inventory:" << endl;
+	for (const Item& item : character.inventory) {
+		cout << "- " << item.name << " (Value: " << item.value << ", Type: " << item.type << ")" << endl;
+	}
+	cout << "Quests:" << endl;
+	for (const Quest& quest : character.quests) {
+		cout << "- " << quest.title << " (Reward: " << quest.reward << ", Completed: "
+			<< (quest.completed ? "Yes" : "No") << ")" << endl;
+	}
+}
+
 int main() {
     bool gameOn = true;
     vector<Character> roster = loadGame();
@@ -154,7 +170,7 @@ int main() {
             for (Character& character : roster) {
                 if (character.index == input) {
                     found = true;
-                    cout << "Viewing " << character.name << "..." << endl;
+                    displayCharacter(character);
                 }
             }
             if (!found) {
