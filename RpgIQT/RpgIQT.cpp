@@ -107,48 +107,59 @@ vector<Character> loadGame() {
 }
 
 void createCharacter(vector<Character>& roster) {
-	Character newCharacter;
-	newCharacter.index = roster.size() + 1;
-	cout << "Enter character name: ";
-	cin >> newCharacter.name;
-	cout << "Enter character HP: ";
-	cin >> newCharacter.hp;
-	cout << "Enter character level: ";
-	cin >> newCharacter.level;
-	cout << "Enter character gold: ";
-	cin >> newCharacter.gold;
-	roster.push_back(newCharacter);
+    Character character;
+    character.index = static_cast<int>(roster.size()) + 1;
+
+    cout << "Enter name: ";
+    cin >> character.name;
+
+    character.hp = 100;
+    character.level = 1;
+    character.gold = 0;
+
+    roster.push_back(character);
+    saveGame(roster);
+
+    cout << "Character created!" << endl;
 }
 
 int main() {
     bool gameOn = true;
-
     vector<Character> roster = loadGame();
 
-	cout << "Welcome to the RPG Inventory and Quest Tracker!\n" << "Please select a character to view their inventory and quests!" << endl;
-
+    cout << "Welcome to the RPG Inventory and Quest Tracker!" << endl;
 
     while (gameOn) {
-        int index;
-      
+        if (roster.empty()) {
+            cout << "No characters yet. Type 0 to create one, or -1 to quit: ";
+        }
+        else {
             for (const Character& character : roster) {
-
-                if (roster.empty()) {
-                    cout << "Looks like there's no characters, to create a new one type (0): " << endl;
-                    cin >> index;
-                    if (index == 0) {
-                        createCharacter(roster);
-                    }
-                }
                 cout << character.index << ". " << character.name << endl;
-                cout << "To create a new type (0)!" << endl;
+            }
+            cout << "Type 0 to create a new character, or -1 to quit: ";
+        }
 
-                cin >> index;
+        int index;
+        cin >> index;
 
-                if (index == 0) {
-                    createCharacter(roster);
+        if (index == -1) {
+            gameOn = false;
+        }
+        else if (index == 0) {
+            createCharacter(roster);
+        }
+        else {
+            bool found = false;
+            for (Character& character : roster) {
+                if (character.index == index) {
+                    found = true;
+                    cout << "Viewing " << character.name << "..." << endl;
                 }
             }
-       
+            if (!found) {
+                cout << "Unknown selection." << endl;
+            }
+        }
     }
 }
