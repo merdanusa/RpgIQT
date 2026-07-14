@@ -7,6 +7,7 @@
 using namespace std;
 
 class Item {
+public:
     string name;
     int value;
     string type;
@@ -14,20 +15,21 @@ class Item {
 
 
 class Quest{
+public:
     string title;
-    string description;
-    int goldReward;
+    int reward;
     bool completed;
 };
 
 class Character {
+public:
     string name;
     int hp, level, gold;
     vector<Item> inventory;
-    vector<string> completedQuests;
+    vector<Quest> quests;
 };
 
-void saveGame(const vector<Character> roster) {
+void saveGame(const vector<Character>& roster) {
     ofstream outFile("save.amq");
 
     for (const Character& character : roster) {
@@ -97,6 +99,8 @@ vector<Character> loadGame() {
 			roster.back().quests.push_back(quest);
         }
     }
+
+    return roster;
 }
 
 int main() {
