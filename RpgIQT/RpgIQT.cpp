@@ -1,8 +1,10 @@
-﻿#include <iostream>;
-#include <vector>;
-#include <string>;
-#include <fstream>;
-#include <sstream>;
+﻿#include <iostream>
+#include <vector>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 
@@ -13,8 +15,7 @@ public:
     string type;
 };
 
-
-class Quest{
+class Quest {
 public:
     int index;
     string title;
@@ -32,12 +33,11 @@ public:
     vector<Quest> quests;
 };
 
-
 void saveGame(const vector<Character>& roster) {
     ofstream outFile("save.amq");
 
     for (const Character& character : roster) {
-        outFile << "CHARACTER," << character.index << "," <<character.name << "," << character.hp << "," << character.level << "," << character.gold << endl;
+        outFile << "CHARACTER," << character.index << "," << character.name << "," << character.hp << "," << character.level << "," << character.gold << endl;
 
         for (const Item& item : character.inventory) {
             outFile << "ITEM," << item.name << "," << item.value << "," << item.type << endl;
@@ -54,7 +54,7 @@ void saveGame(const vector<Character>& roster) {
 vector<Character> loadGame() {
     vector<Character> roster;
 
-	ifstream inFile("save.amq");
+    ifstream inFile("save.amq");
     string line;
     Character* current = nullptr;
 
@@ -93,8 +93,8 @@ vector<Character> loadGame() {
             current->inventory.push_back(item);
         }
         else if (tag == "QUEST" && current != nullptr) {
-			Quest quest;
-			string indexStr, rewardStr, completedStr;
+            Quest quest;
+            string indexStr, rewardStr, completedStr;
 
             getline(ss, indexStr, ',');
             getline(ss, quest.title, ',');
@@ -102,9 +102,10 @@ vector<Character> loadGame() {
             getline(ss, quest.requiredItemType, ',');
             getline(ss, completedStr, ',');
 
-			quest.reward = stoi(rewardStr);
-			quest.completed = (completedStr == "1");
-			roster.back().quests.push_back(quest);
+            quest.index = stoi(indexStr);
+            quest.reward = stoi(rewardStr);
+            quest.completed = (completedStr == "1");
+            current->quests.push_back(quest);
         }
     }
 
@@ -122,59 +123,97 @@ void createCharacter(vector<Character>& roster) {
     character.level = 1;
     character.gold = 0;
 
+    character.inventory = {
+        {"pickaxe", 0, "tool"},
+        {"sword", 10, "weapon"},
+        {"scissors", 10, "tool to cut"}
+    };
+
+    character.quests = {
+        {1, "Mine some silver for a minute", 5, "tool", false},
+        {2, "Defeat the dragon", 10, "weapon", false},
+        {3, "Shave 10 ships", 10, "tool to cut", false}
+    };
+
     roster.push_back(character);
     saveGame(roster);
 
     cout << "Character created!" << endl;
 }
 
-void displayCharacter(const Character& character, const vector<Quest>& quests) {
-	cout << "Name: " << character.name << endl;
-	cout << "HP: " << character.hp << endl;
-	cout << "Level: " << character.level << endl;
-	cout << "Gold: " << character.gold << endl;
-	cout << "Inventory:" << endl;
-	for (const Item& item : character.inventory) {
-		cout << "- " << item.name << " (Value: " << item.value << ", Type: " << item.type << ")" << endl;
-	}
-	cout << "Quests:" << endl;
-	for (const Quest& quest : quests) {
-		cout << quest.index << quest.title << " (Reward: " << quest.reward << "Requirment: " << quest.requiredItemType << ", Completed: "
-			<< (quest.completed ? "Yes" : "No") << ")" << endl;
-	}
+void displayCharacter(const Character& character) {
+    cout << "Name: " << character.name << endl;
+    cout << "HP: " << character.hp << endl;
+    cout << "Level: " << character.level << endl;
+    cout << "Gold: " << character.gold << endl;
+    cout << "Inventory:" << endl;
+    for (const Item& item : character.inventory) {
+        cout << "- " << item.name << " (Value: " << item.value << ", Type: " << item.type << ")" << endl;
+    }
+    cout << "Quests:" << endl;
+    for (const Quest& quest : character.quests) {
+        cout << quest.index << ". " << quest.title << " (Reward: " << quest.reward << ", Requirement: " << quest.requiredItemType << ", Completed: "
+            << (quest.completed ? "Yes" : "No") << ")" << endl;
+    }
+}
+
+bool hasRequiredItem(const Character& character, const string& requiredType) {
+    for (const Item& item : character.inventory) {
+        if (item.type == requiredType) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void completeQuest(Character& character, int questIndex) {
-    bool found = false;
+    Quest* target = nullptr;
 
     for (Quest& quest : character.quests) {
         if (quest.index == questIndex) {
-            found = true;
-            quest.completed = true;
-            character.gold += quest.reward;
-            cout << "Quest completed! Gained " << quest.reward << " gold." << endl;
+            target = &quest;
         }
     }
 
-    if (!found) {
+    if (target == nullptr) {
         cout << "No quest with that index." << endl;
+        return;
     }
+
+    if (target->completed) {
+        cout << "You already completed this quest." << endl;
+        return;
+    }
+
+    if (!hasRequiredItem(character, target->requiredItemType)) {
+        cout << "You need an item of type '" << target->requiredItemType << "' to do this." << endl;
+        return;
+    }
+
+    if (target->requiredItemType == "tool") {
+        cout << "Mining... please wait 3 seconds." << endl;
+        this_thread::sleep_for(chrono::seconds(3));
+    }
+    else if (target->requiredItemType == "tool to cut") {
+        cout << "Hold Enter for 3 seconds to shave, then release: ";
+        cin.ignore();
+        auto start = chrono::steady_clock::now();
+        cin.get();
+        auto end = chrono::steady_clock::now();
+
+        chrono::duration<double> elapsed = end - start;
+        if (elapsed.count() < 3.0) {
+            cout << "You let go too early! Quest failed." << endl;
+            return;
+        }
+    }
+
+    target->completed = true;
+    character.gold += target->reward;
+    cout << "Quest completed! Gained " << target->reward << " gold." << endl;
 }
 
 int main() {
-    vector<Item> items = {
-        {"pickaxe", 0, "tool"},
-        {"sword", 10, "weapon"},
-        {"axe", 10, "weapon"},
-        {"scissors", 10, "tool to cut"},
-    };
-
-    vector<Quest> quests = {
-        {1, "Mine some silver for a minute", 5, "tool", false},
-        {2, "Defeat the dragon", 10, "weapon", false},
-        {3, "Shave 10 ships", 10, "tool to cut", false},
-    };
-
     bool gameOn = true;
     vector<Character> roster = loadGame();
 
@@ -205,7 +244,16 @@ int main() {
             for (Character& character : roster) {
                 if (character.index == input) {
                     found = true;
-                    displayCharacter(character, quests);
+                    displayCharacter(character);
+
+                    cout << "Type a quest number to complete it, or -1 to go back: ";
+                    int questChoice;
+                    cin >> questChoice;
+
+                    if (questChoice != -1) {
+                        completeQuest(character, questChoice);
+                        saveGame(roster);
+                    }
                 }
             }
             if (!found) {
