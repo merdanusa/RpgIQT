@@ -16,6 +16,7 @@ public:
 
 class Quest{
 public:
+    int index;
     string title;
     int reward;
     string requiredItemType;
@@ -31,6 +32,7 @@ public:
     vector<Quest> quests;
 };
 
+
 void saveGame(const vector<Character>& roster) {
     ofstream outFile("save.amq");
 
@@ -42,7 +44,7 @@ void saveGame(const vector<Character>& roster) {
         }
 
         for (const Quest& quest : character.quests) {
-            outFile << "QUEST," << quest.title << "," << quest.reward << "," << quest.requiredItemType  << "," << quest.completed << endl;
+            outFile << "QUEST," << quest.index << "," << quest.title << "," << quest.reward << "," << quest.requiredItemType << "," << quest.completed << endl;
         }
     }
 
@@ -92,8 +94,9 @@ vector<Character> loadGame() {
         }
         else if (tag == "QUEST" && current != nullptr) {
 			Quest quest;
-			string rewardStr, completedStr;
+			string indexStr, rewardStr, completedStr;
 
+            getline(ss, indexStr, ',');
             getline(ss, quest.title, ',');
             getline(ss, rewardStr, ',');
             getline(ss, quest.requiredItemType, ',');
@@ -125,7 +128,7 @@ void createCharacter(vector<Character>& roster) {
     cout << "Character created!" << endl;
 }
 
-void displayCharacter(const Character& character) {
+void displayCharacter(const Character& character, const vector<Quest>& quests) {
 	cout << "Name: " << character.name << endl;
 	cout << "HP: " << character.hp << endl;
 	cout << "Level: " << character.level << endl;
@@ -135,10 +138,27 @@ void displayCharacter(const Character& character) {
 		cout << "- " << item.name << " (Value: " << item.value << ", Type: " << item.type << ")" << endl;
 	}
 	cout << "Quests:" << endl;
-	for (const Quest& quest : character.quests) {
-		cout << "- " << quest.title << " (Reward: " << quest.reward << "Requirment: " << quest.requiredItemType << ", Completed: "
+	for (const Quest& quest : quests) {
+		cout << quest.index << quest.title << " (Reward: " << quest.reward << "Requirment: " << quest.requiredItemType << ", Completed: "
 			<< (quest.completed ? "Yes" : "No") << ")" << endl;
 	}
+}
+
+void completeQuest(Character& character, int questIndex) {
+    bool found = false;
+
+    for (Quest& quest : character.quests) {
+        if (quest.index == questIndex) {
+            found = true;
+            quest.completed = true;
+            character.gold += quest.reward;
+            cout << "Quest completed! Gained " << quest.reward << " gold." << endl;
+        }
+    }
+
+    if (!found) {
+        cout << "No quest with that index." << endl;
+    }
 }
 
 int main() {
@@ -149,11 +169,11 @@ int main() {
         {"scissors", 10, "tool to cut"},
     };
 
-	vector<Quest> quests = {
-		{"Mine some silver for a minute", 5, "tool", false},
-		{"Defeat the dragon", 10, "weapon", false},
-		{"Shave 10 ships", 10, "tool to cut", false},
-	};
+    vector<Quest> quests = {
+        {1, "Mine some silver for a minute", 5, "tool", false},
+        {2, "Defeat the dragon", 10, "weapon", false},
+        {3, "Shave 10 ships", 10, "tool to cut", false},
+    };
 
     bool gameOn = true;
     vector<Character> roster = loadGame();
@@ -185,7 +205,7 @@ int main() {
             for (Character& character : roster) {
                 if (character.index == input) {
                     found = true;
-                    displayCharacter(character);
+                    displayCharacter(character, quests);
                 }
             }
             if (!found) {
