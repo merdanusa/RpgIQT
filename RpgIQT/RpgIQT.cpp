@@ -34,7 +34,7 @@ void saveGame(const vector<Character>& roster) {
     ofstream outFile("save.amq");
 
     for (const Character& character : roster) {
-        outFile << "CHARACTER," << character.index <<character.name << "," << character.hp << "," << character.level << "," << character.gold << endl;
+        outFile << "CHARACTER," << character.index << "," <<character.name << "," << character.hp << "," << character.level << "," << character.gold << endl;
 
         for (const Item& item : character.inventory) {
             outFile << "ITEM," << item.name << "," << item.value << "," << item.type << endl;
