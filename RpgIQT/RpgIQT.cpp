@@ -45,8 +45,16 @@ void saveGame(const vector<Character> roster) {
     outFile.close();
 }
 
-void loadGame() {
+vector<Character> loadGame() {
+    vector<Character> roster;
 
+	ifstream inFile("save.amq");
+    string line;
+    Character* current = nullptr;
+
+    while (getline(inFile, line)) {
+
+    }
 }
 
 int main() {
