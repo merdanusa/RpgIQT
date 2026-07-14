@@ -104,9 +104,15 @@ vector<Character> loadGame() {
 }
 
 int main() {
+    bool gameOn = true;
+
     vector<Character> roster;
 
     loadGame();
 
 	cout << "Welcome to the RPG Inventory and Quest Tracker!" << endl;
+
+    while (gameOn) {
+
+    }
 }
