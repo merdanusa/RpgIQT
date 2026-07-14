@@ -18,6 +18,7 @@ class Quest{
 public:
     string title;
     int reward;
+    string requiredItemType;
     bool completed;
 };
 
@@ -41,7 +42,7 @@ void saveGame(const vector<Character>& roster) {
         }
 
         for (const Quest& quest : character.quests) {
-            outFile << "QUEST," << quest.title << "," << quest.reward << "," << quest.completed << endl;
+            outFile << "QUEST," << quest.title << "," << quest.reward << "," << quest.requiredItemType  << "," << quest.completed << endl;
         }
     }
 
@@ -95,6 +96,7 @@ vector<Character> loadGame() {
 
             getline(ss, quest.title, ',');
             getline(ss, rewardStr, ',');
+            getline(ss, quest.requiredItemType, ',');
             getline(ss, completedStr, ',');
 
 			quest.reward = stoi(rewardStr);
@@ -134,12 +136,25 @@ void displayCharacter(const Character& character) {
 	}
 	cout << "Quests:" << endl;
 	for (const Quest& quest : character.quests) {
-		cout << "- " << quest.title << " (Reward: " << quest.reward << ", Completed: "
+		cout << "- " << quest.title << " (Reward: " << quest.reward << "Requirment: " << quest.requiredItemType << ", Completed: "
 			<< (quest.completed ? "Yes" : "No") << ")" << endl;
 	}
 }
 
 int main() {
+    vector<Item> items = {
+        {"pickaxe", 0, "tool"},
+        {"sword", 10, "weapon"},
+        {"axe", 10, "weapon"},
+        {"scissors", 10, "tool to cut"},
+    };
+
+	vector<Quest> quests = {
+		{"Mine some silver for a minute", 5, "tool", false},
+		{"Defeat the dragon", 10, "weapon", false},
+		{"Shave 10 ships", 10, "tool to cut", false},
+	};
+
     bool gameOn = true;
     vector<Character> roster = loadGame();
 
