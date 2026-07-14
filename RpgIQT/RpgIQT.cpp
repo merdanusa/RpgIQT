@@ -124,9 +124,7 @@ void createCharacter(vector<Character>& roster) {
     character.gold = 0;
 
     character.inventory = {
-        {"pickaxe", 0, "tool"},
-        {"sword", 10, "weapon"},
-        {"scissors", 10, "tool to cut"}
+        {"pickaxe", 0, "tool"}
     };
 
     character.quests = {
@@ -213,7 +211,45 @@ void completeQuest(Character& character, int questIndex) {
     cout << "Quest completed! Gained " << target->reward << " gold." << endl;
 }
 
+void openShop(Character& character, const vector<Item>& shopItems) {
+    cout << "Welcome to the shop! You have " << character.gold << " gold." << endl;
+
+    for (size_t i = 0; i < shopItems.size(); i++) {
+        cout << i + 1 << ". " << shopItems[i].name << " (" << shopItems[i].value << " gold, " << shopItems[i].type << ")" << endl;
+    }
+
+    cout << "Type a number to buy, or -1 to leave: ";
+    int choice;
+    cin >> choice;
+
+    if (choice == -1) {
+        return;
+    }
+
+    if (choice < 1 || choice > static_cast<int>(shopItems.size())) {
+        cout << "Invalid choice." << endl;
+        return;
+    }
+
+    Item chosen = shopItems[choice - 1];
+
+    if (character.gold < chosen.value) {
+        cout << "Not enough gold." << endl;
+        return;
+    }
+
+    character.gold -= chosen.value;
+    character.inventory.push_back(chosen);
+    cout << "Bought " << chosen.name << "!" << endl;
+}
+
 int main() {
+    vector<Item> shopItems = {
+        {"sword", 10, "weapon"},
+        {"axe", 15, "weapon"},
+        {"scissors", 10, "tool to cut"}
+    };
+
     bool gameOn = true;
     vector<Character> roster = loadGame();
 
@@ -246,11 +282,15 @@ int main() {
                     found = true;
                     displayCharacter(character);
 
-                    cout << "Type a quest number to complete it, or -1 to go back: ";
+                    cout << "Type a quest number to complete it, -2 to shop, or -1 to go back: ";
                     int questChoice;
                     cin >> questChoice;
 
-                    if (questChoice != -1) {
+                    if (questChoice == -2) {
+                        openShop(character, shopItems);
+                        saveGame(roster);
+                    }
+                    else if (questChoice != -1) {
                         completeQuest(character, questChoice);
                         saveGame(roster);
                     }
