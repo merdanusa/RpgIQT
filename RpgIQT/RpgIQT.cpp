@@ -150,7 +150,7 @@ void displayCharacter(const Character& character) {
     }
     cout << "Quests:" << endl;
     for (const Quest& quest : character.quests) {
-        cout << quest.index << ". " << quest.title << " (Reward: " << quest.reward << ", Requirement: " << quest.requiredItemType << ", Completed: "
+        cout << quest.index << ". " << quest.title << " (Reward: " << quest.reward << ", Requirement: " << quest.requiredItemType << ", Done before: "
             << (quest.completed ? "Yes" : "No") << ")" << endl;
     }
 }
@@ -175,11 +175,6 @@ void completeQuest(Character& character, int questIndex) {
 
     if (target == nullptr) {
         cout << "No quest with that index." << endl;
-        return;
-    }
-
-    if (target->completed) {
-        cout << "You already completed this quest." << endl;
         return;
     }
 
