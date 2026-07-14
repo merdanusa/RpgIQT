@@ -23,6 +23,7 @@ public:
 
 class Character {
 public:
+    int index;
     string name;
     int hp, level, gold;
     vector<Item> inventory;
@@ -33,7 +34,7 @@ void saveGame(const vector<Character>& roster) {
     ofstream outFile("save.amq");
 
     for (const Character& character : roster) {
-        outFile << "CHARACTER," << character.name << "," << character.hp << "," << character.level << "," << character.gold << endl;
+        outFile << "CHARACTER," << character.index <<character.name << "," << character.hp << "," << character.level << "," << character.gold << endl;
 
         for (const Item& item : character.inventory) {
             outFile << "ITEM," << item.name << "," << item.value << "," << item.type << endl;
@@ -61,13 +62,15 @@ vector<Character> loadGame() {
 
         if (tag == "CHARACTER") {
             Character character;
-            string hpStr, levelStr, goldStr;
+            string indexStr, hpStr, levelStr, goldStr;
 
+            getline(ss, indexStr, ',');
             getline(ss, character.name, ',');
             getline(ss, hpStr, ',');
             getline(ss, levelStr, ',');
             getline(ss, goldStr, ',');
 
+            character.index = stoi(indexStr);
             character.hp = stoi(hpStr);
             character.level = stoi(levelStr);
             character.gold = stoi(goldStr);
@@ -103,16 +106,49 @@ vector<Character> loadGame() {
     return roster;
 }
 
+void createCharacter(vector<Character>& roster) {
+	Character newCharacter;
+	newCharacter.index = roster.size() + 1;
+	cout << "Enter character name: ";
+	cin >> newCharacter.name;
+	cout << "Enter character HP: ";
+	cin >> newCharacter.hp;
+	cout << "Enter character level: ";
+	cin >> newCharacter.level;
+	cout << "Enter character gold: ";
+	cin >> newCharacter.gold;
+	roster.push_back(newCharacter);
+}
+
 int main() {
     bool gameOn = true;
 
-    vector<Character> roster;
+    vector<Character> roster = loadGame();
 
-    loadGame();
+	cout << "Welcome to the RPG Inventory and Quest Tracker!\n" << "Please select a character to view their inventory and quests!" << endl;
 
-	cout << "Welcome to the RPG Inventory and Quest Tracker!" << endl;
 
     while (gameOn) {
+        int index;
+      
+            for (const Character& character : roster) {
 
+                if (roster.empty()) {
+                    cout << "Looks like there's no characters, to create a new one type (0): " << endl;
+                    cin >> index;
+                    if (index == 0) {
+                        createCharacter(roster);
+                    }
+                }
+                cout << character.index << ". " << character.name << endl;
+                cout << "To create a new type (0)!" << endl;
+
+                cin >> index;
+
+                if (index == 0) {
+                    createCharacter(roster);
+                }
+            }
+       
     }
 }
