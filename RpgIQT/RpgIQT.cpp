@@ -84,6 +84,18 @@ vector<Character> loadGame() {
             item.value = stoi(valueStr);
             current->inventory.push_back(item);
         }
+        else if (tag == "QUEST" && current != nullptr) {
+			Quest quest;
+			string rewardStr, completedStr;
+
+            getline(ss, quest.title, ',');
+            getline(ss, rewardStr, ',');
+            getline(ss, completedStr, ',');
+
+			quest.reward = stoi(rewardStr);
+			quest.completed = (completedStr == "1");
+			roster.back().quests.push_back(quest);
+        }
     }
 }
 
