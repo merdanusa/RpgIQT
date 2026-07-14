@@ -53,7 +53,37 @@ vector<Character> loadGame() {
     Character* current = nullptr;
 
     while (getline(inFile, line)) {
+        stringstream ss(line);
+        string tag;
+        getline(ss, tag, ',');
 
+        if (tag == "CHARACTER") {
+            Character character;
+            string hpStr, levelStr, goldStr;
+
+            getline(ss, character.name, ',');
+            getline(ss, hpStr, ',');
+            getline(ss, levelStr, ',');
+            getline(ss, goldStr, ',');
+
+            character.hp = stoi(hpStr);
+            character.level = stoi(levelStr);
+            character.gold = stoi(goldStr);
+
+            roster.push_back(character);
+            current = &roster.back();
+        }
+        else if (tag == "ITEM" && current != nullptr) {
+            Item item;
+            string valueStr;
+
+            getline(ss, item.name, ',');
+            getline(ss, valueStr, ',');
+            getline(ss, item.type, ',');
+
+            item.value = stoi(valueStr);
+            current->inventory.push_back(item);
+        }
     }
 }
 
